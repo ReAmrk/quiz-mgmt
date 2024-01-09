@@ -5,10 +5,11 @@ import Navbar from 'react-bootstrap/Navbar';
 export function Navigation() {
   const [isAuth, setIsAuth] = useState(false);
 
-  useEffect(() => {
-    // Use localStorage.getItem directly in the condition
-    setIsAuth(localStorage.getItem('access_token') !== null);
-  }, []);
+   useEffect(() => {
+     if (localStorage.getItem('access_token') !== null) {
+        setIsAuth(true);
+      }
+    }, [isAuth]);
 
   return (
     <div>

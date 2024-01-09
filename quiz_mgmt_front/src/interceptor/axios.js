@@ -1,49 +1,44 @@
 import axios from "axios";
 
-let isRefreshing = false;
-let failedRequests = [];
-
 axios.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const { config, response: { status } = {} } = error;
+    const originalRequest = error.config;
 
-    if (status === 401 && !isRefreshing) {
+    if (error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
       try {
-        isRefreshing = true;
         const refreshToken = localStorage.getItem('refresh_token');
 
         if (!refreshToken) {
           throw new Error('No refresh token available');
         }
 
-        const refreshResponse = await axios.post(
+        const response = await axios.post(
           'http://localhost:8000/token/refresh/',
           { refresh: refreshToken },
-          {
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            withCredentials: true
-          }
+          { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
         );
 
-        axios.defaults.headers.common['Authorization'] = `Bearer ${refreshResponse.data['access']}`;
-        localStorage.setItem('access_token', refreshResponse.data.access);
-        localStorage.setItem('refresh_token', refreshResponse.data.refresh);
+        const { access: newAccess } = response.data;
 
-        // Retry the original request after refreshing the token
-        return axios(config);
+        // Update tokens in localStorage and axios defaults
+        localStorage.setItem('access_token', newAccess);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${newAccess}`;
+
+        // Retry the original request
+        return axios(originalRequest);
       } catch (refreshError) {
         console.error('Token refresh failed:', refreshError);
-        // Redirect to login or handle the failure appropriately
+
+        // Handle the failure appropriately (e.g., logout user, redirect to login)
         // Example: window.location.href = '/login';
         return Promise.reject(refreshError);
-      } finally {
-        isRefreshing = false;
       }
     }
 
+    // Continue with the original error if not a 401 or already retried
     return Promise.reject(error);
   }
 );
