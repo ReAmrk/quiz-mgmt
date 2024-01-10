@@ -29,6 +29,10 @@ ALLOWED_HOSTS = ['*']
 
 # Allauth based settings
 
+SITE_ID = 1
+ACCOUNT_EMAIL_REQUIRED = False
+ACCOUNT_EMAIL_VERIFICATION = "none"
+
 
 # Application definition
 
@@ -45,10 +49,11 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
-    'rest_framework_simplejwt.token_blacklist',
-
+    "rest_framework_simplejwt",
     'allauth',
     'allauth.account',
+    "dj_rest_auth",
+    "dj_rest_auth.registration",
 ]
 
 MIDDLEWARE = [
@@ -65,29 +70,14 @@ MIDDLEWARE = [
 
 ]
 
-CORS_ORIGIN_ALLOW_ALL = True
-
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:3000/",
+        "http://127.0.0.1:3000/",
+    ]
 CORS_ALLOW_CREDENTIALS = True
-
-CORS_ALLOW_METHODS = [
-    "DELETE",
-    "GET",
-    "OPTIONS",
-    "PATCH",
-    "POST",
-    "PUT",
-]
-CORS_ALLOW_HEADERS = [
-    "accept",
-    "accept-encoding",
-    "authorization",
-    "content-type",
-    "dnt",
-    "origin",
-    "user-agent",
-    "x-csrftoken",
-    "x-requested-with",
-]
 
 ROOT_URLCONF = 'quiz_mgmt_srv.urls'
 
@@ -168,13 +158,21 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ]
 }
 
 SIMPLE_JWT = {
-     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=10),
-     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-     'ROTATE_REFRESH_TOKENS': True,
-     'BLACKLIST_AFTER_ROTATION': True
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
+    "UPDATE_LAST_LOGIN": True,
+    "SIGNING_KEY": "f1d23263-c711-4a95-976b-5fc0e53aedc2",  # generate a key and replace me
+    "ALGORITHM": "HS512",
+}
+
+REST_AUTH = {
+    "USE_JWT": True,
+    "JWT_AUTH_HTTPONLY": False,
 }

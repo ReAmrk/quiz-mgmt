@@ -12,7 +12,7 @@ export const Home = () => {
          (async () => {
            try {
              const {data} = await axios.get(   
-                            'http://localhost:8000/home/', {
+                            'http://localhost:8000/api/auth/home/', {
                              headers: {
                                 'Content-Type': 'application/json'
                              }}

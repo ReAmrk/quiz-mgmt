@@ -16,7 +16,7 @@ axios.interceptors.response.use(
         }
 
         const response = await axios.post(
-          'http://localhost:8000/token/refresh/',
+          'http://localhost:8000/api/auth/token/refresh/',
           { refresh: refreshToken },
           { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
         );

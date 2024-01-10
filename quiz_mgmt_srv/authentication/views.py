@@ -9,7 +9,9 @@ class HomeView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
-        content = {'message': 'Welcome to the JWT Authentication page using React Js and Django!'}
+        user_name = request.user.username  # Get the username of the logged-in user
+        user_role = request.user.is_superuser
+        content = {'message': f'Welcome, {user_name}, is superuser: {user_role}! This is the JWT Authentication page using React Js and Django!'}
 
         return Response(content)
 

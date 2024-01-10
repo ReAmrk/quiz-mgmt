@@ -18,6 +18,7 @@ export function Navigation() {
         <Nav className="me-auto">
           {/* Use conditional rendering for Home link */}
           {isAuth && <Nav.Link href="/">Home</Nav.Link>}
+            <Nav.Link href="/register">Register</Nav.Link>
         </Nav>
         <Nav>
           {/* Use conditional rendering for Logout/Login links */}
