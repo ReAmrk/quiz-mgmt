@@ -10,6 +10,7 @@ from .models import QuestionCategory, Question, Quiz
 from .serializers import QuestionCategorySerializer, QuestionSerializer, QuizSerializer
 from rest_framework.permissions import IsAuthenticated
 
+
 class QuestionCategoryAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -56,12 +57,12 @@ class QuizAPIView(APIView):
     def get(self, request):
         user_is_superuser = request.user.is_superuser
         if user_is_superuser:
-            quizzes = Quiz.objects.all().select_related('quiz_category')  # Eagerly load the category
+            quizzes = Quiz.objects.all().select_related('quiz_category').prefetch_related('quiz_questions')
         else:
-            quizzes = Quiz.objects.filter(created_by=request.user).select_related('quiz_category')
+            quizzes = Quiz.objects.filter(created_by=request.user).select_related('quiz_category').prefetch_related('quiz_questions')
 
-        # Use prefetch_related to load the questions related to each quiz
-        serializer = QuizSerializer(quizzes.prefetch_related('quiz_questions'), many=True)
+        # Serialize the quizzes along with the related questions
+        serializer = QuizSerializer(quizzes, many=True)
 
         return Response(serializer.data)
 
@@ -71,3 +72,4 @@ class QuizAPIView(APIView):
             serializer.save(created_by=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
