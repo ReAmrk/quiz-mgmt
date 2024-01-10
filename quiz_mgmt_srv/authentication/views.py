@@ -5,13 +5,17 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
+
+
+
+
 class HomeView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
         user_name = request.user.username  # Get the username of the logged-in user
         user_role = request.user.is_superuser
-        content = {'message': f'Welcome, {user_name}, is superuser: {user_role}! This is the JWT Authentication page using React Js and Django!'}
+        content = {'message': f'Welcome, {user_name}, is superuser: {user_role}!'}
 
         return Response(content)
 

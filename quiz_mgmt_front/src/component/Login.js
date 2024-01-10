@@ -4,6 +4,7 @@ import { useState } from "react";
 export const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMsg, setErrorMsg] = useState("");
 
   const submit = async (e) => {
     e.preventDefault();
@@ -34,16 +35,28 @@ export const Login = () => {
       // Redirect to home page
       window.location.href = '/';
     } catch (error) {
-      // Handle error, you might want to show a user-friendly error message
-      console.error("Login failed", error);
+        if (error.response && error.response.status === 400) {
+          // Unauthorized - Incorrect username or password
+          console.error("Login failed: Incorrect username or password");
+          setErrorMsg("Incorrect username or password");
+        } else {
+          console.error("Login failed", error);
+        }
     }
   };
 
-  return (
+    return (
     <div className="Auth-form-container">
       <form className="Auth-form" onSubmit={submit}>
         <div className="Auth-form-content">
           <h3 className="Auth-form-title">Sign In</h3>
+
+          {errorMsg && (
+            <div className="alert alert-danger" role="alert">
+              {errorMsg}
+            </div>
+          )}
+
           <div className="form-group mt-3">
             <label>Username</label>
             <input

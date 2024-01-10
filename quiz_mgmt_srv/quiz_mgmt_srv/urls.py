@@ -21,5 +21,5 @@ from rest_framework_simplejwt import views as jwt_views
 urlpatterns = [
     path('api/auth/', include('authentication.urls')),
     path('admin/', admin.site.urls),
-    path('api/trivorg', include("trivorg.urls")),
+    path('', include("trivorg.urls")),
 ]

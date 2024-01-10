@@ -14,11 +14,13 @@ export function Navigation() {
   return (
     <div>
       <Navbar bg="dark" variant="dark">
-        <Navbar.Brand href="/">JWT Authentication</Navbar.Brand>
+        <Navbar.Brand href="/">TrivOrg</Navbar.Brand>
         <Nav className="me-auto">
           {/* Use conditional rendering for Home link */}
           {isAuth && <Nav.Link href="/">Home</Nav.Link>}
             <Nav.Link href="/register">Register</Nav.Link>
+            <Nav.Link href="/addquestion">Questions</Nav.Link>
+            <Nav.Link href="/quizadmin">Quiz</Nav.Link>
         </Nav>
         <Nav>
           {/* Use conditional rendering for Logout/Login links */}
