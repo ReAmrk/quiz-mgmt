@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'domain.categories',
     'domain.questions',
+    'domain.participants',
+    'domain.teams',
     'ninja',
 ]
 

@@ -3,8 +3,10 @@ from ninja import Router, Schema, Form
 from .models import Participant
 from datetime import datetime
 from typing import List
+from .interfaces import TeamInterface
 
 router = Router()
+teams = TeamInterface()
 
 
 class ParticpantSchemaIn(Schema):
