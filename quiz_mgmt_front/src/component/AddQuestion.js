@@ -37,7 +37,7 @@ const AdminPage = () => {
     // Fetch categories and questions when the component mounts
     const fetchData = async () => {
       try {
-        const categoriesResponse = await axios.get("http://localhost:8000/api/question-categories/");
+        const categoriesResponse = await axios.get("http://localhost:8000/api/categories/");
         const questionsResponse = await axios.get("http://localhost:8000/api/questions/");
 
         setCategories(categoriesResponse.data);
@@ -55,7 +55,7 @@ const AdminPage = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/question-categories/",
+        "http://localhost:8000/api/categories/",
         newCategory,
         { withCredentials: true }
       );
