@@ -71,16 +71,16 @@ const QuizCreationPage = () => {
 
   const getQuestionsForQuiz = (quizId) => {
     // Filter questionsInQuizzes based on the current quiz ID
-    const filteredQuestionsInQuiz = questionsInQuizzes.filter((qiq) => qiq.id === quizId)
+    const filteredQuestionsInQuiz = questionsInQuizzes.filter((qiq) => qiq.quiz.id === quizId)
 
     // Map over the filtered questionsInQuiz and return an array of question objects
-    const newQuestions = filteredQuestionsInQuiz.map((qq) => qq.quiz_questions);
+    const newQuestions = filteredQuestionsInQuiz.map((qq) => qq.question);
 
 
     // Use the questionIds to filter the questions
     // const filteredQuestions = questions.filter((question) => questionIds.includes(question.id));
 
-    return filteredQuestionsInQuiz;
+    return newQuestions;
   };
 
   return (
@@ -141,12 +141,9 @@ const QuizCreationPage = () => {
                   Category: {quiz.category.category_name}<br/>
                   Questions:
                   <ul>
-                    {
-                      questions.map((question) =>
-                      <li key={question.id}>
-                        {question.question}
-                      </li>)
-                    }
+                    {getQuestionsForQuiz(quiz.id).map((question) => (
+                        <li key={question.id}>{question.question}</li>
+                    ))}
                   </ul>
                 </li>
             ))}
