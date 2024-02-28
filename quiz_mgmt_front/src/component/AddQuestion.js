@@ -178,7 +178,7 @@ const AdminPage = () => {
           <h3>Questions</h3>
           <ul>
             {questions.map(question => (
-                <li key={question.id}>{question.question_text}</li>
+                <li key={question.id}>{question.question}</li>
             ))}
           </ul>
         </div>
@@ -210,7 +210,7 @@ const AdminPage = () => {
         />
         <ul>
           {filteredQuestions.map(question => (
-              <li key={question.id}>{question.question_text}</li>
+              <li key={question.id}>{question.question}</li>
           ))}
         </ul>
       </div>

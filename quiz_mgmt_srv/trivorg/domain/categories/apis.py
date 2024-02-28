@@ -11,6 +11,7 @@ from .models import Category
 router = Router()
 
 
+
 class CategorySchemaIn(Schema):
     category_name: str
     description: str
@@ -28,11 +29,12 @@ class CategorySchemaChoice(Schema):
     id: int
     name: str
 
+
 @router.post("/")
 def create_category(request, payload: CategorySchemaIn):
-    user_id = User.get_username(self=request.user)
+    current_user = request.user
     category = Category.objects.create(**payload.dict())
-    category.created_by = user_id
+    category.created_by = current_user.id
     return {"id": category.id}
 
 

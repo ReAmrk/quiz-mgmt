@@ -5,6 +5,7 @@ const QuizCreationPage = () => {
   const [categories, setCategories] = useState([]);
   const [questions, setQuestions] = useState([]);
   const [quizzes, setQuizzes] = useState([]);
+  const [questionsInQuizzes, setQuestionsInQuizzes] = useState([]);
   const [newQuiz, setNewQuiz] = useState({
     quiz_name: "",
     quiz_description: "",
@@ -16,12 +17,14 @@ const QuizCreationPage = () => {
     // Fetch categories and questions when the component mounts
     const fetchData = async () => {
       try {
-        const categoriesResponse = await axios.get("http://localhost:8000/api/question-categories/");
+        const categoriesResponse = await axios.get("http://localhost:8000/api/categories/");
         const questionsResponse = await axios.get("http://localhost:8000/api/questions/");
         const quizzesResponse = await axios.get("http://localhost:8000/api/quizzes/");
+        const questionsInQuizzesResponse = await axios.get("http://localhost:8000/api/questions_in_quizzes/");
         setCategories(categoriesResponse.data);
         setQuestions(questionsResponse.data);
         setQuizzes(quizzesResponse.data);
+        setQuestionsInQuizzes(questionsInQuizzesResponse.data);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -65,6 +68,21 @@ const QuizCreationPage = () => {
     setNewQuiz({ ...newQuiz, quiz_questions: updatedQuestions });
   };
 
+
+  const getQuestionsForQuiz = (quizId) => {
+    // Filter questionsInQuizzes based on the current quiz ID
+    const filteredQuestionsInQuiz = questionsInQuizzes.filter((qiq) => qiq.id === quizId)
+
+    // Map over the filtered questionsInQuiz and return an array of question objects
+    const newQuestions = filteredQuestionsInQuiz.map((qq) => qq.quiz_questions);
+
+
+    // Use the questionIds to filter the questions
+    // const filteredQuestions = questions.filter((question) => questionIds.includes(question.id));
+
+    return filteredQuestionsInQuiz;
+  };
+
   return (
       <div>
         <h2>Create Quiz</h2>
@@ -106,7 +124,7 @@ const QuizCreationPage = () => {
                         checked={newQuiz.quiz_questions.includes(question.id)}
                         onChange={() => handleQuestionSelection(question.id)}
                     />
-                    {question.question_text}
+                    {question.question}
                   </label>
                 </li>
             ))}
@@ -117,15 +135,18 @@ const QuizCreationPage = () => {
         <div>
           <h2>Existing Quizzes</h2>
           <ul>
-            {quizzes.map(quiz => (
+            {quizzes.map((quiz) => (
                 <li key={quiz.id}>
-                  <strong>{quiz.quiz_name}</strong> - {quiz.quiz_description}<br/>
-                  Category: {quiz.quiz_category.category_name}<br/>
+                  <strong>{quiz.quiz_name}</strong> - {quiz.description}<br/>
+                  Category: {quiz.category.category_name}<br/>
                   Questions:
                   <ul>
-                    {quiz.quiz_questions.map(question => (
-                        <li key={question.id}>{question.question_text}</li>
-                    ))}
+                    {
+                      questions.map((question) =>
+                      <li key={question.id}>
+                        {question.question}
+                      </li>)
+                    }
                   </ul>
                 </li>
             ))}
