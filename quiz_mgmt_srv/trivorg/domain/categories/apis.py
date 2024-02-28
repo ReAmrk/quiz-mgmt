@@ -1,7 +1,10 @@
 from typing import List
 
+from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth.models import User
 from django.shortcuts import render
 from ninja import Router, Schema
+from ninja.security import django_auth, HttpBearer
 from datetime import datetime
 from .models import Category
 
@@ -9,13 +12,13 @@ router = Router()
 
 
 class CategorySchemaIn(Schema):
-    name: str
+    category_name: str
     description: str
 
 
 class CategorySchemaOut(Schema):
     id: int
-    name: str
+    category_name: str
     description: str
     created_at: datetime = None
     updated_at: datetime = None
@@ -25,10 +28,11 @@ class CategorySchemaChoice(Schema):
     id: int
     name: str
 
-
 @router.post("/")
 def create_category(request, payload: CategorySchemaIn):
+    user_id = User.get_username(self=request.user)
     category = Category.objects.create(**payload.dict())
+    category.created_by = user_id
     return {"id": category.id}
 
 

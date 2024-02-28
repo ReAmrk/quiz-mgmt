@@ -41,6 +41,10 @@ INSTALLED_APPS = [
     'domain.questions',
     'domain.participants',
     'domain.teams',
+    'domain.quizzes',
+    'domain.questions_in_quizzes',
+    'domain.teams_in_quizzes',
+    'domain.points',
     'ninja',
 ]
 

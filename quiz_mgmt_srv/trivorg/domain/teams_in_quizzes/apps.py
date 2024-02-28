@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class ParticipantsInQuizzesConfig(AppConfig):
-    name = 'domain.participants_in_quizzes'
+    name = 'domain.teams_in_quizzes'

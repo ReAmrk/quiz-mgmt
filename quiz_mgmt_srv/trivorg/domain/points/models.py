@@ -9,4 +9,4 @@ class Point(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.points
+        return self.points.__str__() + ' - ' + self.team.team_name + ' - ' + self.quiz.quiz_name
