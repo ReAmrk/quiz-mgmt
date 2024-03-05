@@ -33,7 +33,9 @@ class QuestionSchemaOut(Schema):
 def create_question(request, payload: Form[QuestionSchemaIn]):
     category_data = payload.dict().pop("category", None)
     category_id = category_data.get("id") if category_data else None
+    current_user = request.user
     question = Question.objects.create(**payload.dict())
+    question.created_by = current_user
     return {"id": question.id}
 
 

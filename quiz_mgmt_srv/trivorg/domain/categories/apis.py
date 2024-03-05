@@ -1,15 +1,10 @@
 from typing import List
-
-from django.contrib.auth.base_user import AbstractBaseUser
-from django.contrib.auth.models import User
-from django.shortcuts import render
 from ninja import Router, Schema
-from ninja.security import django_auth, HttpBearer
 from datetime import datetime
 from .models import Category
 
-router = Router()
 
+router = Router()
 
 
 class CategorySchemaIn(Schema):
@@ -33,20 +28,30 @@ class CategorySchemaChoice(Schema):
 @router.post("/")
 def create_category(request, payload: CategorySchemaIn):
     current_user = request.user
-    category = Category.objects.create(**payload.dict())
-    category.created_by = current_user.id
+    category = Category.objects.create(**payload.dict(), created_by=current_user)
     return {"id": category.id}
 
 
 @router.get("/", response=List[CategorySchemaOut])
 def list_categories(request):
-    categories = Category.objects.all()
+    current_user = request.user
+    if current_user.is_superuser:
+        categories = Category.objects.all()
+    elif current_user.is_authenticated and not current_user.is_superuser:
+        categories = Category.objects.filter(created_by=current_user)
+    else:
+        categories = []
     return categories
 
 
 @router.get("/{categories_id}", response=CategorySchemaOut)
 def get_category(request, categories_id: int):
-    category = Category.objects.get(id=categories_id)
+    if request.user.is_superuser:
+        category = Category.objects.get(id=categories_id)
+    elif request.user.is_authenticated and not request.user.is_superuser:
+        category = Category.objects.get(id=categories_id, created_by=request.user)
+    else:
+        category = None
     return category
 
 
