@@ -43,7 +43,7 @@ export class IdentityService extends BaseService {
         
         try {
             const response = await this.axios.post(
-                'logout', 
+                'logout/', 
                 data,
                 {
                     headers: {
@@ -62,5 +62,26 @@ export class IdentityService extends BaseService {
             return undefined;
         }
     }
+
+    async refreshToken(data: IJWTResponse): Promise<IJWTResponse | undefined> {
+        console.log(data);
+        
+        try {
+            const response = await this.axios.post<IJWTResponse>(
+                'token/refresh/', 
+                data
+            );
+
+            console.log('refresh token response', response);
+            if (response.status === 200) {
+                return response.data;
+            }
+            return undefined;
+        } catch (e) {
+            console.log('error: ', (e as Error).message);
+            return undefined;
+        }
+    }
+
 
 }

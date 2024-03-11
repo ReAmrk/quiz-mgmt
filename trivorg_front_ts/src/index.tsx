@@ -20,6 +20,7 @@ import Register from './routes/identity/Register';
 import Privacy from './routes/Privacy';
 import Home from './routes/Home';
 import Info from './routes/identity/Info';
+import Categories from './routes/categories/Categories';
 
 
 const router = createBrowserRouter([
@@ -48,6 +49,10 @@ const router = createBrowserRouter([
                 path: "privacy/:id",
                 element: <Privacy />,
             },
+            {
+                path: "categories/",
+                element: <Categories />,
+            }
         ]
     },
 

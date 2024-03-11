@@ -22,6 +22,10 @@ const Header = () => {
                             </li>
 
                             <li className="nav-item" style={{ 'display': jwtResponse == null ? 'none' : '' }}>
+                                <Link to="categories" className="nav-link text-dark">Categories</Link>
+                            </li>
+
+                            <li className="nav-item" style={{ 'display': jwtResponse == null ? 'none' : '' }}>
                                 <Link to="questions" className="nav-link text-dark">Questions</Link>
                             </li>
 

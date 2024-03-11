@@ -38,6 +38,7 @@ const Login = () => {
         setValidationErrors([]);
 
         var jwtData = await identityService.login(values);
+        
 
         if (jwtData == undefined) {
             // TODO: get error info
