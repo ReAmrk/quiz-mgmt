@@ -25,25 +25,47 @@ class TeamInQuizSchemaOut(Schema):
 
 @router.post("/")
 def create_team_in_quiz(request, payload: Form[TeamInQuizSchemaIn]):
-    team_in_quiz = TeamInQuiz.objects.create(**payload.dict())
-    return {"id": team_in_quiz.id}
+    if request.user.is_authenticated:
+        team_in_quiz = TeamInQuiz.objects.create(**payload.dict(), created_by=request.user)
+        return {"id": team_in_quiz.id}
+    else:
+        return {"error": "Please log in"}
 
 
 @router.get("/", response=List[TeamInQuizSchemaOut])
 def list_teams_in_quizzes(request):
-    teams_in_quizzes = TeamInQuiz.objects.all()
+    current_user = request.user
+    if current_user.is_superuser:
+        teams_in_quizzes = TeamInQuiz.objects.all()
+    elif current_user.is_authenticated and not current_user.is_superuser:
+        teams_in_quizzes = TeamInQuiz.objects.filter(created_by=current_user)
+    else:
+        teams_in_quizzes = []
     return teams_in_quizzes
 
 
 @router.get("/{teams_in_quizzes_id}", response=TeamInQuizSchemaOut)
 def get_team_in_quiz(request, teams_in_quizzes_id: int):
-    team_in_quiz = TeamInQuiz.objects.get(id=teams_in_quizzes_id)
+    try:
+        if request.user.is_superuser:
+            team_in_quiz = TeamInQuiz.objects.get(id=teams_in_quizzes_id)
+        elif request.user.is_authenticated and not request.user.is_superuser:
+            team_in_quiz = TeamInQuiz.objects.get(id=teams_in_quizzes_id, created_by=request.user)
+        else:
+            team_in_quiz = None
+    except TeamInQuiz.DoesNotExist:
+        return {"error": "Team in quiz not found"}
     return team_in_quiz
 
 
 @router.put("/{teams_in_quizzes_id}")
 def update_team_in_quiz(request, teams_in_quizzes_id: int, payload: TeamInQuizSchemaIn):
-    team_in_quiz = TeamInQuiz.objects.get(id=teams_in_quizzes_id)
+    if request.user.is_superuser:
+        team_in_quiz = TeamInQuiz.objects.get(id=teams_in_quizzes_id)
+    elif request.user.is_authenticated and not request.user.is_superuser:
+        team_in_quiz = TeamInQuiz.objects.get(id=teams_in_quizzes_id, created_by=request.user)
+    else:
+        return {"error": "You do not have permission to perform this action"}
     for attr, value in payload.dict().items():
         setattr(team_in_quiz, attr, value)
     team_in_quiz.save()
@@ -52,6 +74,11 @@ def update_team_in_quiz(request, teams_in_quizzes_id: int, payload: TeamInQuizSc
 
 @router.delete("/{teams_in_quizzes_id}")
 def delete_team_in_quiz(request, teams_in_quizzes_id: int):
-    team_in_quiz = TeamInQuiz.objects.get(id=teams_in_quizzes_id)
+    if request.user.is_superuser:
+        team_in_quiz = TeamInQuiz.objects.get(id=teams_in_quizzes_id)
+    elif request.user.is_authenticated and not request.user.is_superuser:
+        team_in_quiz = TeamInQuiz.objects.get(id=teams_in_quizzes_id, created_by=request.user)
+    else:
+        return {"error": "You do not have permission to perform this action"}
     team_in_quiz.delete()
     return {"success": True}

@@ -16,7 +16,7 @@ export const Login = () => {
       };
 
       const response = await axios.post(
-        'http://localhost:8000/api/auth/login/',
+        'http://localhost:8000/api/token/pair',
         user,
         { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
       );

@@ -26,35 +26,61 @@ class QuizSchemaOut(Schema):
 
 @router.post("/")
 def create_quiz(request, payload: Form[QuizSchemaIn]):
-    category_data = payload.dict().pop("category", None)
-    category_id = category_data.get("id") if category_data else None
-    quiz = Quiz.objects.create(**payload.dict())
-    return {"id": quiz.id}
+    if request.user.is_authenticated:
+        quiz = Quiz.objects.create(**payload.dict(), created_by=request.user)
+        return {"id": quiz.id}
+    else:
+        return {"error": "Please log in"}
 
 
 @router.get("/", response=List[QuizSchemaOut])
 def list_quizzes(request):
-    quizzes = Quiz.objects.all()
+    current_user = request.user
+    if current_user.is_superuser:
+        quizzes = Quiz.objects.all()
+    elif current_user.is_authenticated and not current_user.is_superuser:
+        quizzes = Quiz.objects.filter(created_by=current_user)
+    else:
+        quizzes = []
     return quizzes
 
 
 @router.get("/{quizzes_id}", response=QuizSchemaOut)
 def get_quiz(request, quizzes_id: int):
-    quiz = Quiz.objects.get(id=quizzes_id)
+    try:
+        if request.user.is_superuser:
+            quiz = Quiz.objects.get(id=quizzes_id)
+        elif request.user.is_authenticated and not request.user.is_superuser:
+            quiz = Quiz.objects.get(id=quizzes_id, created_by=request.user)
+        else:
+            quiz = None
+    except Quiz.DoesNotExist:
+        return {"error": "Quiz not found"}
     return quiz
 
 
 @router.put("/{quizzes_id}")
 def update_quiz(request, quizzes_id: int, payload: QuizSchemaIn):
-    quiz = Quiz.objects.get(id=quizzes_id)
+    if request.user.is_superuser:
+        quiz = Quiz.objects.get(id=quizzes_id)
+    elif request.user.is_authenticated and not request.user.is_superuser:
+        quiz = Quiz.objects.get(id=quizzes_id, created_by=request.user)
+    else:
+        return {"error": "You are not authorized to perform this action"}
     for attr, value in payload.dict().items():
         setattr(quiz, attr, value)
     quiz.save()
     return {"success": True}
 
 
+
 @router.delete("/{quizzes_id}")
 def delete_quiz(request, quizzes_id: int):
-    quiz = Quiz.objects.get(id=quizzes_id)
+    if request.user.is_superuser:
+        quiz = Quiz.objects.get(id=quizzes_id)
+    elif request.user.is_authenticated and not request.user.is_superuser:
+        quiz = Quiz.objects.get(id=quizzes_id, created_by=request.user)
+    else:
+        return {"error": "You are not authorized to perform this action"}
     quiz.delete()
     return {"success": True}

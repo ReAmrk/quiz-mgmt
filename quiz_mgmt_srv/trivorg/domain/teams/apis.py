@@ -21,25 +21,46 @@ class TeamSchemaOut(Schema):
 
 @router.post("/")
 def create_team(request, payload: Form[TeamSchemaIn]):
-    team = Team.objects.create(**payload.dict())
-    return {"id": team.id}
+    if request.user.is_authenticated:
+        team = Team.objects.create(**payload.dict(), created_by=request.user)
+        return {"id": team.id}
+    else:
+        return {"error": "Please log in"}
 
 
 @router.get("/", response=List[TeamSchemaOut])
 def list_teams(request):
-    teams = Team.objects.all()
+    current_user = request.user
+    if current_user.is_superuser:
+        teams = Team.objects.all()
+    elif current_user.is_authenticated and not current_user.is_superuser:
+        teams = Team.objects.filter(created_by=current_user)
+    else:
+        teams = []
     return teams
-
 
 @router.get("/{teams_id}", response=TeamSchemaOut)
 def get_team(request, teams_id: int):
-    team = Team.objects.get(id=teams_id)
+    try:
+        if request.user.is_superuser:
+            team = Team.objects.get(id=teams_id)
+        elif request.user.is_authenticated and not request.user.is_superuser:
+            team = Team.objects.get(id=teams_id, created_by=request.user)
+        else:
+            team = None
+    except Team.DoesNotExist:
+        return {"error": "Team not found"}
     return team
 
 
 @router.put("/{teams_id}")
 def update_team(request, teams_id: int, payload: TeamSchemaIn):
-    team = Team.objects.get(id=teams_id)
+    if request.user.is_superuser:
+        team = Team.objects.get(id=teams_id)
+    elif request.user.is_authenticated and not request.user.is_superuser:
+        team = Team.objects.get(id=teams_id, created_by=request.user)
+    else:
+        return {"error": "Unauthorized"}
     for attr, value in payload.dict().items():
         setattr(team, attr, value)
     team.save()
@@ -48,6 +69,11 @@ def update_team(request, teams_id: int, payload: TeamSchemaIn):
 
 @router.delete("/{teams_id}")
 def delete_team(request, teams_id: int):
-    team = Team.objects.get(id=teams_id)
+    if request.user.is_superuser:
+        team = Team.objects.get(id=teams_id)
+    elif request.user.is_authenticated and not request.user.is_superuser:
+        team = Team.objects.get(id=teams_id, created_by=request.user)
+    else:
+        return {"error": "Unauthorized"}
     team.delete()
     return {"success": True}

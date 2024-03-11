@@ -8,8 +8,8 @@ const QuizCreationPage = () => {
   const [questionsInQuizzes, setQuestionsInQuizzes] = useState([]);
   const [newQuiz, setNewQuiz] = useState({
     quiz_name: "",
-    quiz_description: "",
-    quiz_category: 1, // Set default category ID
+    description: "",
+    category_id: "1", // Set default category ID
     quiz_questions: [], // Array to store selected question IDs
   });
 
@@ -32,27 +32,50 @@ const QuizCreationPage = () => {
 
     fetchData();
   }, []);
-
-  const handleQuizSubmit = async (e) => {
+ const handleQuizSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await axios.post(
+      // Create the quiz first
+      const quizResponse = await axios.post(
         "http://localhost:8000/api/quizzes/",
-        newQuiz,
+        {
+          quiz_name: newQuiz.quiz_name,
+          description: newQuiz.description,
+          category_id: newQuiz.category_id,
+        },
         { withCredentials: true }
       );
 
-      console.log("Quiz created:", response.data);
+      // Extract the quiz ID from the response
+      const quizId = quizResponse.data.id;
+
+      // Create an array of promises for each selected question
+      const questionPromises = newQuiz.quiz_questions.map((questionId) =>
+        axios.post(
+          "http://localhost:8000/api/questions_in_quizzes/",
+          {
+            question_id: questionId,
+            quiz_id: quizId,
+          },
+          { withCredentials: true }
+        )
+      );
+
+      // Execute all promises in parallel
+      await Promise.all(questionPromises);
+
       // Reset form after successful submission
       setNewQuiz({
         quiz_name: "",
-        quiz_description: "",
-        quiz_category: 1,
+        description: "",
+        category_id: "1",
         quiz_questions: [],
       });
 
+      // Fetch updated quizzes data
       const quizzesResponse = await axios.get("http://localhost:8000/api/quizzes/");
+      setQuizzes(quizzesResponse.data);
     } catch (error) {
       console.error("Error creating quiz:", error);
     }
@@ -98,14 +121,14 @@ const QuizCreationPage = () => {
           <label>Description:</label>
           <input
               type="text"
-              value={newQuiz.quiz_description}
-              onChange={(e) => setNewQuiz({...newQuiz, quiz_description: e.target.value})}
+              value={newQuiz.description}
+              onChange={(e) => setNewQuiz({...newQuiz, description: e.target.value})}
           />
           <br/>
           <label>Category:</label>
           <select
-              value={newQuiz.quiz_category}
-              onChange={(e) => setNewQuiz({...newQuiz, quiz_category: e.target.value})}
+              value={newQuiz.category_id}
+              onChange={(e) => setNewQuiz({...newQuiz, category_id: e.target.value})}
           >
             {categories.map(category => (
                 <option key={category.id} value={category.id}>

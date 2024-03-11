@@ -1,8 +1,12 @@
+from django.contrib.auth.models import User
+from ninja_jwt.tokens import RefreshToken
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken
+
+from .serializers import CustomRegistrationSerializer
+
 
 class HomeView(APIView):
     permission_classes = (IsAuthenticated,)
@@ -27,3 +31,30 @@ class LogoutView(APIView):
             return Response(status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class CustomRegistrationView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = CustomRegistrationSerializer(data=request.data)
+
+        if serializer.is_valid():
+            # Perform registration logic here
+            # Access the validated data using serializer.validated_data
+            # For example: username = serializer.validated_data['username']
+            username = serializer.validated_data['username']
+            password = serializer.validated_data['password']
+            first_name = serializer.validated_data['firstName']
+            last_name = serializer.validated_data['lastName']
+            print(first_name + " " + last_name)
+
+            if User.objects.filter(username=username).exists():
+                return Response({'error': 'Username is already taken'}, status=status.HTTP_400_BAD_REQUEST)
+
+            User.objects.create_user(username=username,
+                                     password=password,
+                                     first_name=first_name,
+                                     last_name=last_name)
+
+            return Response({'message': 'Registration successful'}, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

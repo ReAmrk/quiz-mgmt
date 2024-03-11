@@ -25,25 +25,44 @@ class QuestionInQuizSchemaOut(Schema):
 
 @router.post("/")
 def create_question_in_quiz(request, payload: Form[QuestionInQuizSchemaIn]):
-    question_in_quiz = QuestionInQuiz.objects.create(**payload.dict())
-    return {"id": question_in_quiz.id}
+    if request.user.is_authenticated:
+        question_in_quiz = QuestionInQuiz.objects.create(**payload.dict())
+        return {"id": question_in_quiz.id}
+    else:
+        return {"error": "Please log in"}
 
 
 @router.get("/", response=List[QuestionInQuizSchemaOut])
 def list_questions_in_quizzes(request):
-    questions_in_quizzes = QuestionInQuiz.objects.all()
+    current_user = request.user
+    if current_user.is_superuser:
+        questions_in_quizzes = QuestionInQuiz.objects.all()
+    elif current_user.is_authenticated and not current_user.is_superuser:
+        questions_in_quizzes = QuestionInQuiz.objects.filter(created_by=current_user)
+    else:
+        questions_in_quizzes = []
     return questions_in_quizzes
 
 
 @router.get("/{questions_in_quizzes_id}", response=QuestionInQuizSchemaOut)
 def get_question_in_quiz(request, questions_in_quizzes_id: int):
-    question_in_quiz = QuestionInQuiz.objects.get(id=questions_in_quizzes_id)
+    if request.user.is_superuser:
+        question_in_quiz = QuestionInQuiz.objects.get(id=questions_in_quizzes_id)
+    elif request.user.is_authenticated and not request.user.is_superuser:
+        question_in_quiz = QuestionInQuiz.objects.get(id=questions_in_quizzes_id, created_by=request.user)
+    else:
+        question_in_quiz = None
     return question_in_quiz
 
 
 @router.put("/{questions_in_quizzes_id}")
 def update_question_in_quiz(request, questions_in_quizzes_id: int, payload: QuestionInQuizSchemaIn):
-    question_in_quiz = QuestionInQuiz.objects.get(id=questions_in_quizzes_id)
+    if request.user.is_superuser:
+        question_in_quiz = QuestionInQuiz.objects.get(id=questions_in_quizzes_id)
+    elif request.user.is_authenticated and not request.user.is_superuser:
+        question_in_quiz = QuestionInQuiz.objects.get(id=questions_in_quizzes_id, created_by=request.user)
+    else:
+        return {"error": "You do not have permission to update this question in quiz"}
     for attr, value in payload.dict().items():
         setattr(question_in_quiz, attr, value)
     question_in_quiz.save()
@@ -52,6 +71,11 @@ def update_question_in_quiz(request, questions_in_quizzes_id: int, payload: Ques
 
 @router.delete("/{questions_in_quizzes_id}")
 def delete_question_in_quiz(request, questions_in_quizzes_id: int):
-    question_in_quiz = QuestionInQuiz.objects.get(id=questions_in_quizzes_id)
+    if request.user.is_superuser:
+        question_in_quiz = QuestionInQuiz.objects.get(id=questions_in_quizzes_id)
+    elif request.user.is_authenticated and not request.user.is_superuser:
+        question_in_quiz = QuestionInQuiz.objects.get(id=questions_in_quizzes_id, created_by=request.user)
+    else:
+        return {"error": "You do not have permission to delete this question in quiz"}
     question_in_quiz.delete()
     return {"success": True}

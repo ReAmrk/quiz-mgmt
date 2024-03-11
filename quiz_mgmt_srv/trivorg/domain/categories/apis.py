@@ -27,9 +27,11 @@ class CategorySchemaChoice(Schema):
 
 @router.post("/")
 def create_category(request, payload: CategorySchemaIn):
-    current_user = request.user
-    category = Category.objects.create(**payload.dict(), created_by=current_user)
-    return {"id": category.id}
+    if request.user.is_authenticated:
+        category = Category.objects.create(**payload.dict(), created_by=request.user)
+        return {"id": category.id}
+    else:
+        return {"error": "Please log in"}
 
 
 @router.get("/", response=List[CategorySchemaOut])
@@ -46,18 +48,27 @@ def list_categories(request):
 
 @router.get("/{categories_id}", response=CategorySchemaOut)
 def get_category(request, categories_id: int):
+    try:
+        if request.user.is_superuser:
+            category = Category.objects.get(id=categories_id)
+        elif request.user.is_authenticated and not request.user.is_superuser:
+            category = Category.objects.get(id=categories_id, created_by=request.user)
+        else:
+            category = None
+    except Category.DoesNotExist:
+        return {"error": "Category not found"}
+    return category
+
+
+
+@router.put("/{categories_id}")
+def update_category(request, categories_id: int, payload: CategorySchemaIn):
     if request.user.is_superuser:
         category = Category.objects.get(id=categories_id)
     elif request.user.is_authenticated and not request.user.is_superuser:
         category = Category.objects.get(id=categories_id, created_by=request.user)
     else:
-        category = None
-    return category
-
-
-@router.put("/{categories_id}")
-def update_category(request, categories_id: int, payload: CategorySchemaIn):
-    category = Category.objects.get(id=categories_id)
+        return {"success": False}
     for attr, value in payload.dict().items():
         setattr(category, attr, value)
     category.save()
@@ -66,6 +77,11 @@ def update_category(request, categories_id: int, payload: CategorySchemaIn):
 
 @router.delete("/{categories_id}")
 def delete_category(request, categories_id: int):
-    category = Category.objects.get(id=categories_id)
+    if request.user.is_superuser:
+        category = Category.objects.get(id=categories_id)
+    elif request.user.is_authenticated and not request.user.is_superuser:
+        category = Category.objects.get(id=categories_id, created_by=request.user)
+    else:
+        return {"success": False}
     category.delete()
     return {"success": True}

@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     'domain.teams_in_quizzes',
     'domain.points',
     'ninja',
+    'ninja_extra'
 ]
 
 MIDDLEWARE = [
@@ -114,7 +115,7 @@ WSGI_APPLICATION = 'trivorg.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'trivorg',
         'USER': 'postgres',
         'PASSWORD': 'Kevade123',

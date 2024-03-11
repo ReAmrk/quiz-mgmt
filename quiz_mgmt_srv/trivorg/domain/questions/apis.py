@@ -10,12 +10,13 @@ from .interfaces import CategoryInterface
 router = Router()
 categories = CategoryInterface()
 
+
 class QuestionSchemaIn(Schema):
     question: str
     answer: str
-    difficulty: int
-    points: int
-    category_id: int
+    difficulty: str
+    points: str
+    category_id: str
 
 
 class QuestionSchemaOut(Schema):
@@ -31,37 +32,64 @@ class QuestionSchemaOut(Schema):
 
 @router.post("/")
 def create_question(request, payload: Form[QuestionSchemaIn]):
-    category_data = payload.dict().pop("category", None)
-    category_id = category_data.get("id") if category_data else None
-    current_user = request.user
-    question = Question.objects.create(**payload.dict())
-    question.created_by = current_user
-    return {"id": question.id}
+    if request.user.is_authenticated:
+        question = Question.objects.create(**payload.dict(), created_by=request.user)
+        return {"id": question.id}
+    else:
+        return {"error": "Please log in"}
+
 
 
 @router.get("/", response=List[QuestionSchemaOut])
 def list_questions(request):
-    questions = Question.objects.all()
+    current_user = request.user
+    if current_user.is_superuser:
+        questions = Question.objects.all()
+    elif current_user.is_authenticated and not current_user.is_superuser:
+        questions = Question.objects.filter(created_by=current_user)
+    else:
+        questions = []
     return questions
 
 
 @router.get("/{questions_id}", response=QuestionSchemaOut)
 def get_question(request, questions_id: int):
-    question = Question.objects.get(id=questions_id)
+    if request.user.is_superuser:
+        question = Question.objects.get(id=questions_id)
+    elif request.user.is_authenticated and not request.user.is_superuser:
+        question = Question.objects.get(id=questions_id, created_by=request.user)
+    else:
+        question = None
     return question
 
 
 @router.put("/{questions_id}")
 def update_question(request, questions_id: int, payload: QuestionSchemaIn):
-    question = Question.objects.get(id=questions_id)
-    for attr, value in payload.dict().items():
-        setattr(question, attr, value)
-    question.save()
-    return {"success": True}
+    if request.user.is_superuser:
+        question = Question.objects.get(id=questions_id)
+    elif request.user.is_authenticated and not request.user.is_superuser:
+        question = Question.objects.get(id=questions_id, created_by=request.user)
+    else:
+        question = None
+    if question:
+        for attr, value in payload.dict().items():
+            setattr(question, attr, value)
+        question.save()
+        return {"success": True}
+    else:
+        return {"error": "You are not authorized to update this question"}
 
 
 @router.delete("/{questions_id}")
 def delete_question(request, questions_id: int):
-    question = Question.objects.get(id=questions_id)
-    question.delete()
-    return {"success": True}
+    if request.user.is_superuser:
+        question = Question.objects.get(id=questions_id)
+    elif request.user.is_authenticated and not request.user.is_superuser:
+        question = Question.objects.get(id=questions_id, created_by=request.user)
+    else:
+        question = None
+    if question:
+        question.delete()
+        return {"success": True}
+    else:
+        return {"error": "You are not authorized to delete this question"}
