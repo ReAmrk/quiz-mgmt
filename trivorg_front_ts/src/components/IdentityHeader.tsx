@@ -11,6 +11,7 @@ const IdentityHeader = () => {
     const logout = () => {
         if (jwtResponse)
             identityService.logout(jwtResponse).then(response => {
+                localStorage.clear();
                 if (setJwtResponse)
                     setJwtResponse(null);
                 navigate("/");

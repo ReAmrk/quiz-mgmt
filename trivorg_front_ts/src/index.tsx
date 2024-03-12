@@ -21,6 +21,7 @@ import Privacy from './routes/Privacy';
 import Home from './routes/Home';
 import Info from './routes/identity/Info';
 import Categories from './routes/categories/Categories';
+import Questions from "./routes/questions/Questions";
 
 
 const router = createBrowserRouter([
@@ -52,6 +53,10 @@ const router = createBrowserRouter([
             {
                 path: "categories/",
                 element: <Categories />,
+            },
+            {
+                path: "questions/",
+                element: <Questions />,
             }
         ]
     },

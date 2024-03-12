@@ -63,7 +63,7 @@ export class IdentityService extends BaseService {
         }
     }
 
-    async refreshToken(data: IJWTResponse): Promise<IJWTResponse | undefined> {
+    async refreshToken(data: { refresh: string }): Promise<IJWTResponse | undefined> {
         console.log(data);
         
         try {

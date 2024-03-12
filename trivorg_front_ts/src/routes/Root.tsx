@@ -23,7 +23,7 @@ const Root = () => {
                     <Outlet />
                 </main>
             </div>
-            
+
             <Footer />
         </JwtContext.Provider>
     );

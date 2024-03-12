@@ -4,7 +4,7 @@ import { ICategory } from "./ICategory"
 export interface IQuestion extends IBaseEntity {
     question: string;
     answer: string;
-    difficulity: string;
+    difficulty: string;
     points: string;
-    category: ICategory
+    categoryId: string;
 }
