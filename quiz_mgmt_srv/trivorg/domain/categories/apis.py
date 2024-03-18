@@ -72,7 +72,7 @@ def update_category(request, categories_id: int, payload: CategorySchemaIn):
     for attr, value in payload.dict().items():
         setattr(category, attr, value)
     category.save()
-    return {"success": True}
+    return {"id": categories_id, "success": True, "message": "Category updated successfully"}
 
 
 @router.delete("/{categories_id}")
@@ -84,4 +84,4 @@ def delete_category(request, categories_id: int):
     else:
         return {"success": False}
     category.delete()
-    return {"success": True}
+    return {"id": categories_id, "success": True, "message": "Category deleted successfully"}

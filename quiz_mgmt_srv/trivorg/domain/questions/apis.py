@@ -1,6 +1,4 @@
 from typing import List
-
-from django.shortcuts import render
 from ninja import Router, Schema, Form
 from datetime import datetime
 from .models import Question
@@ -36,7 +34,7 @@ def create_question(request, payload: Form[QuestionSchemaIn]):
         question = Question.objects.create(**payload.dict(), created_by=request.user)
         return {"id": question.id}
     else:
-        return {"error": "Please log in"}
+        return {"error": "Not authenticated"}
 
 
 

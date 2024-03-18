@@ -1,5 +1,3 @@
-from ninja import NinjaAPI
-from ninja.security import HttpBearer
 from ninja_extra import NinjaExtraAPI
 from ninja_jwt.authentication import JWTAuth
 from ninja_jwt.controller import NinjaJWTDefaultController
