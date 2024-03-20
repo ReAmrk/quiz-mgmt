@@ -24,7 +24,7 @@ class QuestionInQuizSchemaOut(Schema):
 
 
 @router.post("/")
-def create_question_in_quiz(request, payload: Form[QuestionInQuizSchemaIn]):
+def create_question_in_quiz(request, payload: QuestionInQuizSchemaIn):
     if request.user.is_authenticated:
         question_in_quiz = QuestionInQuiz.objects.create(**payload.dict())
         return {"id": question_in_quiz.id}

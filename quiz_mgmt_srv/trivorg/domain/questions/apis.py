@@ -29,7 +29,7 @@ class QuestionSchemaOut(Schema):
 
 
 @router.post("/")
-def create_question(request, payload: Form[QuestionSchemaIn]):
+def create_question(request, payload: QuestionSchemaIn):
     if request.user.is_authenticated:
         question = Question.objects.create(**payload.dict(), created_by=request.user)
         return {"id": question.id}

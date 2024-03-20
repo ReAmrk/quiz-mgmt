@@ -24,7 +24,7 @@ class TeamInQuizSchemaOut(Schema):
 
 
 @router.post("/")
-def create_team_in_quiz(request, payload: Form[TeamInQuizSchemaIn]):
+def create_team_in_quiz(request, payload: TeamInQuizSchemaIn):
     if request.user.is_authenticated:
         team_in_quiz = TeamInQuiz.objects.create(**payload.dict(), created_by=request.user)
         return {"id": team_in_quiz.id}

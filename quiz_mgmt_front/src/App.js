@@ -7,6 +7,7 @@ import {Logout} from './component/Logout';
 import {Register} from "./component/Register";
 import AddQuestion from "./component/AddQuestion";
 import QuizAdmin from "./component/QuizAdmin";
+import PointsInQuizzesPage from './component/PointsAdmin';
 function App() {
   return (
     <BrowserRouter>
@@ -18,6 +19,7 @@ function App() {
           <Route path="/register" element={<Register/>}/>
           <Route path="/addquestion" element={<AddQuestion/>}/>
           <Route path="/quizadmin" element={<QuizAdmin/>}/>
+          <Route path="/pointsadmin" element={<PointsInQuizzesPage/>}/>
         </Routes>
     </BrowserRouter>
   );

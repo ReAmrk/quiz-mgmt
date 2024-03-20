@@ -40,24 +40,26 @@ const AdminPage = () => {
   };
 
   const handleCategorySubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    const response = await axios.post(
-      "http://localhost:8000/api/categories/",
-      newCategory,
-      { withCredentials: true }
-    );
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/api/categories/",
+        newCategory,
+        { withCredentials: true }
+      );
 
-    setCategories([...categories, response.data]);
-    setNewCategory({
-      category_name: "",
-      description: "",
-    });
-  } catch (error) {
-    console.error("Error creating category:", error);
-  }
-};
+      setCategories([...categories, response.data]);
+      setNewCategory({
+        category_name: "",
+        description: "",
+      });
+      const categoriesResponse = await axios.get("http://localhost:8000/api/categories/");
+      setCategories(categoriesResponse.data);
+    } catch (error) {
+      console.error("Error creating category:", error);
+    }
+  };
 
 const handleQuestionSubmit = async (e) => {
   e.preventDefault();
@@ -68,9 +70,9 @@ const handleQuestionSubmit = async (e) => {
       {
         question: newQuestion.question,
         answer: newQuestion.answer,
-        points: parseInt(newQuestion.points),
-        difficulty: parseInt(newQuestion.difficulty),
-        category_id: parseInt(newQuestion.category_id),
+        points: newQuestion.points,
+        difficulty: newQuestion.difficulty,
+        category_id: newQuestion.category_id,
       },
       { withCredentials: true }
     );
@@ -83,6 +85,8 @@ const handleQuestionSubmit = async (e) => {
       difficulty: "0",
       category_id: "1",
     });
+    const questionResponse = await axios.get("http://localhost:8000/api/questions/");
+    setQuestions(questionResponse.data);
   } catch (error) {
     console.error("Error creating question:", error);
   }
@@ -91,84 +95,84 @@ const handleQuestionSubmit = async (e) => {
   const filteredCategories = categories.filter(category => !filterCategory || category.id === parseInt(filterCategory));
   const filteredQuestions = questions.filter(question => {
     return (
-      (!filterCategory || question.category === parseInt(filterCategory)) &&
-      (!searchKeyword ||
-        question.question.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-        question.answer.toLowerCase().includes(searchKeyword.toLowerCase()))
+        (!filterCategory || question.category.id === parseInt(filterCategory)) &&
+        (!searchKeyword ||
+            question.question.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+            question.answer.toLowerCase().includes(searchKeyword.toLowerCase()))
     );
-  });
+});
 
   return (
     <div>
       <h2>Admin Page</h2>
 
       <div>
-        <h3>Create Category</h3>
-        <form onSubmit={handleCategorySubmit}>
-          <label>Name:</label>
-          <input
-            type="text"
-            value={newCategory.category_name}
-            onChange={(e) => handleInputChange(e, setNewCategory)}
-          />
-          <br />
-          <label>Description:</label>
-          <input
-            type="text"
-            value={newCategory.description}
-            onChange={(e) => handleInputChange(e, setNewCategory)}
-          />
-          <br />
-          <button type="submit">Create Category</button>
-        </form>
-      </div>
+          <h3>Create Category</h3>
+          <form onSubmit={handleCategorySubmit}>
+            <label>Name:</label>
+            <input
+                type="text"
+                value={newCategory.category_name}
+                onChange={(e) => setNewCategory({...newCategory, category_name: e.target.value})}
+            />
+            <br/>
+            <label>Description:</label>
+            <input
+                type="text"
+                value={newCategory.description}
+                onChange={(e) => setNewCategory({...newCategory, description: e.target.value})}
+            />
+            <br/>
+            <button type="submit">Create Category</button>
+          </form>
+        </div>
 
-      <div>
-        <h3>Create Question</h3>
-        <form onSubmit={handleQuestionSubmit}>
-          <label>Text:</label>
-          <input
-            type="text"
-            value={newQuestion.question}
-            onChange={(e) => handleInputChange(e, setNewQuestion)}
-          />
-          <br />
-          <label>Answer:</label>
-          <input
-            type="text"
-            value={newQuestion.answer}
-            onChange={(e) => handleInputChange(e, setNewQuestion)}
-          />
-          <br />
-          <label>Points:</label>
-          <input
-            type="number"
-            value={newQuestion.points}
-            onChange={(e) => handleInputChange(e, setNewQuestion)}
-          />
-          <br />
-          <label>Difficulty:</label>
-          <input
-            type="number"
-            value={newQuestion.difficulty}
-            onChange={(e) => handleInputChange(e, setNewQuestion)}
-          />
-          <br />
-          <label>Category:</label>
-          <select
-            value={newQuestion.category_id}
-            onChange={(e) => handleInputChange(e, setNewQuestion)}
-          >
-            {categories.map(category => (
-              <option key={category.id} value={category.id.toString()}>
-                {category.category_name}
-              </option>
-            ))}
-          </select>
-          <br />
-          <button type="submit">Create Question</button>
-        </form>
-      </div>
+        <div>
+          <h3>Create Question</h3>
+          <form onSubmit={handleQuestionSubmit}>
+            <label>Text:</label>
+            <input
+                type="text"
+                value={newQuestion.question}
+                onChange={(e) => setNewQuestion({...newQuestion, question: e.target.value})}
+            />
+            <br/>
+            <label>Answer:</label>
+            <input
+                type="text"
+                value={newQuestion.answer}
+                onChange={(e) => setNewQuestion({...newQuestion, answer: e.target.value})}
+            />
+            <br/>
+            <label>Points:</label>
+            <input
+                type="number"
+                value={newQuestion.points}
+                onChange={(e) => setNewQuestion({...newQuestion, points: e.target.value})}
+            />
+            <br/>
+            <label>Difficulty:</label>
+            <input
+                type="number"
+                value={newQuestion.difficulty}
+                onChange={(e) => setNewQuestion({...newQuestion, difficulty: e.target.value})}
+            />
+            <br/>
+            <label>Category:</label>
+            <select
+                value={newQuestion.category_id}
+                onChange={(e) => setNewQuestion({...newQuestion, category_id: e.target.value})}
+            >
+              {categories.map(category => (
+                  <option key={category.id} value={category.id}>
+                    {category.category_name}
+                  </option>
+              ))}
+            </select>
+            <br/>
+            <button type="submit">Create Question</button>
+          </form>
+        </div>
 
       <div>
         <h3>Categories</h3>
@@ -217,7 +221,6 @@ const handleQuestionSubmit = async (e) => {
         {filteredQuestions.map(question => (
           <li key={question.id}>
             {question.question} || {question.answer} ||{" "}
-            {question.category.category_name}
           </li>
         ))}
       </ul>

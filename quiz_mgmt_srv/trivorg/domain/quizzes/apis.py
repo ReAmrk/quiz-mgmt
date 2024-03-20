@@ -13,19 +13,21 @@ class QuizSchemaIn(Schema):
     quiz_name: str
     description: str
     category_id: int
+    team_limit: str
 
 
 class QuizSchemaOut(Schema):
     id: int
     quiz_name: str
     description: str
+    team_limit: int
     category: categories.get_category()
     created_at: datetime = None
     updated_at: datetime = None
 
 
 @router.post("/")
-def create_quiz(request, payload: Form[QuizSchemaIn]):
+def create_quiz(request, payload: QuizSchemaIn):
     if request.user.is_authenticated:
         quiz = Quiz.objects.create(**payload.dict(), created_by=request.user)
         return {"id": quiz.id}

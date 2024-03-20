@@ -33,6 +33,7 @@ const Questions = () => {
             questionService.getAll(jwtResponse.access).then((response) => {
                 if (response) {
                     setQuestions(response);
+                    console.log(questions)
                 } else {
                     setQuestions([]);
                 }
@@ -60,16 +61,19 @@ const Questions = () => {
             })
         }
     }
+    const filteredQuestions = selectedCategory === 'All' ?
+    questions.filter((question) =>
+        (searchKeyword === '' ||
+        question.question.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+        question.answer.toLowerCase().includes(searchKeyword.toLowerCase()))
+    ) :
+    questions.filter((question) =>
+        (question.category_id === selectedCategory) &&
+        (searchKeyword === '' ||
+        question.question.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+        question.answer.toLowerCase().includes(searchKeyword.toLowerCase()))
+    );
 
-    const filteredCategories = categories.filter((category) => !selectedCategory || category.id === selectedCategory);
-    const filteredQuestions = questions.filter((question) => {
-      return (
-        (!selectedCategory || question.categoryId === selectedCategory) &&
-        (!searchKeyword ||
-          question.question.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-          question.answer.toLowerCase().includes(searchKeyword.toLowerCase()))
-      );
-    });
 
     const handleCategoryIdChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setCategoryId(e.target.value);
@@ -88,6 +92,7 @@ const Questions = () => {
         setDifficulty(e.target.value);
     }
 
+
     const handleCreateQuestion = async (e: React.ChangeEvent<HTMLFormElement>) => {
         e.preventDefault();
 
@@ -96,7 +101,7 @@ const Questions = () => {
             answer: newAnswer,
             points: newPoints,
             difficulty: difficulty,
-            categoryId: categoryId
+            category_id: categoryId
         };
 
         if (jwtResponse) {
@@ -156,35 +161,13 @@ const Questions = () => {
 
                 {/* Display categories dropdown */}
                 <label htmlFor="category-select">Select Category:</label>
-                <select id="category-select" name="category-select" value={selectedCategory}
-                        onChange={(e) => setSelectedCategory(e.target.value)}>
+                <select name="category-select" id="category-select" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
                     <option value="All">All</option>
                     {categories.map(category => (
-                        <option key={category.id} value={category.id}>{category.category_name}</option>
+                        <option value={category.id} key={category.id}>{category.category_name}</option>
                     ))}
                 </select>
-
-
-                <h3>Filtered Categories</h3>
-                <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                >
-                    <option value="">All Categories</option>
-                    {categories.map(category => (
-                        <option key={category.id} value={category.id}>
-                            {category.category_name}
-                        </option>
-                    ))}
-                </select>
-                <ul>
-                    {filteredCategories.map(category => (
-                        <li key={category.id}>{category.category_name}</li>
-                    ))}
-                </ul>
-
-
-                <h3>Filtered Questions</h3>
+                <h3>Questions</h3>
                 <label>Search Questions:</label>
                 <input
                     type="text"

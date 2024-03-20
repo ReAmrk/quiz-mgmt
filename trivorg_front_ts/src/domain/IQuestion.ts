@@ -6,5 +6,5 @@ export interface IQuestion extends IBaseEntity {
     answer: string;
     difficulty: string;
     points: string;
-    categoryId: string;
+    category_id: string;
 }

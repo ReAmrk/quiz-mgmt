@@ -10,6 +10,7 @@ const QuizCreationPage = () => {
     quiz_name: "",
     description: "",
     category_id: "1", // Set default category ID
+    team_limit: "1",
     quiz_questions: [], // Array to store selected question IDs
   });
 
@@ -43,6 +44,7 @@ const QuizCreationPage = () => {
           quiz_name: newQuiz.quiz_name,
           description: newQuiz.description,
           category_id: newQuiz.category_id,
+          team_limit: newQuiz.team_limit,
         },
         { withCredentials: true }
       );
@@ -70,12 +72,15 @@ const QuizCreationPage = () => {
         quiz_name: "",
         description: "",
         category_id: "1",
+        team_limit: "1",
         quiz_questions: [],
       });
 
       // Fetch updated quizzes data
       const quizzesResponse = await axios.get("http://localhost:8000/api/quizzes/");
+      const questionsInQuizzesResponse = await axios.get("http://localhost:8000/api/questions_in_quizzes/")
       setQuizzes(quizzesResponse.data);
+      setQuestionsInQuizzes(questionsInQuizzesResponse.data);
     } catch (error) {
       console.error("Error creating quiz:", error);
     }
@@ -125,6 +130,13 @@ const QuizCreationPage = () => {
               onChange={(e) => setNewQuiz({...newQuiz, description: e.target.value})}
           />
           <br/>
+          <label>Team Limit:</label>
+          <input
+              type="text"
+              value={newQuiz.team_limit}
+              onChange={(e) => setNewQuiz({...newQuiz, team_limit: e.target.value})}
+          />
+          <br/>
           <label>Category:</label>
           <select
               value={newQuiz.category_id}
@@ -162,12 +174,14 @@ const QuizCreationPage = () => {
                 <li key={quiz.id}>
                   <strong>{quiz.quiz_name}</strong> - {quiz.description}<br/>
                   Category: {quiz.category.category_name}<br/>
+                  Number of teams allowed: {quiz.team_limit}<br/>
                   Questions:
                   <ul>
                     {getQuestionsForQuiz(quiz.id).map((question) => (
                         <li key={question.id}>{question.question}</li>
                     ))}
                   </ul>
+
                 </li>
             ))}
           </ul>

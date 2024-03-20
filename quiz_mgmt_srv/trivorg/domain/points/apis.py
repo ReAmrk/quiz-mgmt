@@ -10,9 +10,9 @@ quiz = QuizInterface()
 
 
 class PointSchemaIn(Schema):
-    points: int
-    team_id: int
-    quiz_id: int
+    points: str
+    team_id: str
+    quiz_id: str
 
 
 class PointSchemaOut(Schema):
@@ -27,7 +27,7 @@ class PointSchemaOut(Schema):
 @router.post("/")
 def create_point(request, payload: PointSchemaIn):
     if request.user.is_authenticated:
-        point = Point.objects.create(**payload.dict())
+        point = Point.objects.create(**payload.dict(), created_by=request.user)
         return {"id": point.id}
     else:
         return {"error": "Please log in"}

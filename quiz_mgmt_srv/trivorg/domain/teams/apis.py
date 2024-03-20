@@ -20,7 +20,7 @@ class TeamSchemaOut(Schema):
 
 
 @router.post("/")
-def create_team(request, payload: Form[TeamSchemaIn]):
+def create_team(request, payload: TeamSchemaIn):
     if request.user.is_authenticated:
         team = Team.objects.create(**payload.dict(), created_by=request.user)
         return {"id": team.id}

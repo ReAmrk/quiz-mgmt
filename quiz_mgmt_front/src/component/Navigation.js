@@ -21,6 +21,7 @@ export function Navigation() {
             <Nav.Link href="/register">Register</Nav.Link>
             <Nav.Link href="/addquestion">Questions</Nav.Link>
             <Nav.Link href="/quizadmin">Quiz</Nav.Link>
+            <Nav.Link href="/pointsadmin">Points</Nav.Link>
         </Nav>
         <Nav>
           {/* Use conditional rendering for Logout/Login links */}
