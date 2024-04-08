@@ -14,6 +14,7 @@ class QuizSchemaIn(Schema):
     description: str
     category_id: int
     team_limit: str
+    quiz_date: str
 
 
 class QuizSchemaOut(Schema):
@@ -21,6 +22,8 @@ class QuizSchemaOut(Schema):
     quiz_name: str
     description: str
     team_limit: int
+    quiz_date: datetime
+    is_completed: bool
     category: categories.get_category()
     created_at: datetime = None
     updated_at: datetime = None

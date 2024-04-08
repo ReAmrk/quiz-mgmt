@@ -128,32 +128,6 @@ const PointsInQuizzesPage = () => {
             <input type="number" value={pointsToAdd} onChange={(e) => setPointsToAdd(e.target.value)} />
             <button onClick={handleAddPoints}>Add Points</button>
           </div>
-          <div>
-            <h2>Quizzes with Teams and Points (Descending Order)</h2>
-            {teamInQuiz && teamInQuiz.length > 0 ? (
-                teamInQuiz.map((teamInQuizItem) => (
-                <div key={teamInQuizItem.id}>
-                    <h3>{teamInQuizItem.quiz.quiz_name}</h3>
-                    <ul>
-                    {teamInQuizItem.team ? (
-                        <li key={teamInQuizItem.team.id}>
-                        {teamInQuizItem.team.team_name} - Points:{" "}
-                        {points.find(
-                            (point) =>
-                            point.team.id === teamInQuizItem.team.id &&
-                            point.quiz.id === teamInQuizItem.quiz.id
-                        )?.points || 0}
-                        </li>
-                    ) : (
-                        <li>No teams participating in this quiz.</li>
-                    )}
-                    </ul>
-                </div>
-                ))
-            ) : (
-                <p>No quizzes with teams and points available.</p>
-            )}
-            </div>
         </div>
       );
 }; 

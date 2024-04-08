@@ -14,7 +14,7 @@ class HomeView(APIView):
     def get(self, request):
         user_name = request.user.username  # Get the username of the logged-in user
         user_role = request.user.is_superuser
-        content = {'message': f'Welcome, {user_name}, is superuser: {user_role}!'}
+        content = {'message': f'Welcome, {user_name}'}
 
         return Response(content)
 
