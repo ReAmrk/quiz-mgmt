@@ -1,4 +1,6 @@
 from typing import List
+
+from django.db.models import ProtectedError
 from ninja import Router, Schema
 from datetime import datetime
 from .models import Category
@@ -77,11 +79,20 @@ def update_category(request, categories_id: int, payload: CategorySchemaIn):
 
 @router.delete("/{categories_id}")
 def delete_category(request, categories_id: int):
-    if request.user.is_superuser:
-        category = Category.objects.get(id=categories_id)
-    elif request.user.is_authenticated and not request.user.is_superuser:
-        category = Category.objects.get(id=categories_id, created_by=request.user)
-    else:
-        return {"success": False}
-    category.delete()
-    return {"id": categories_id, "success": True, "message": "Category deleted successfully"}
+    try:
+        if request.user.is_superuser:
+            category = Category.objects.get(id=categories_id)
+        elif request.user.is_authenticated and not request.user.is_superuser:
+            category = Category.objects.get(id=categories_id, created_by=request.user)
+        else:
+            return {"success": False, "message": "Unauthorized access"}
+
+        category.delete()
+        return {"id": categories_id, "success": True, "message": "Category deleted successfully"}
+
+    except ProtectedError as e:
+        # Handle the case when the category cannot be deleted due to protected foreign key constraints
+        return {"success": False, "message": str("Please try deleting questions associated with this category first")}
+
+    except Category.DoesNotExist:
+        return {"success": False, "message": "Category does not exist"}

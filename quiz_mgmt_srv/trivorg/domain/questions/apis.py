@@ -1,4 +1,8 @@
 from typing import List
+
+from django.db.models import ProtectedError
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from ninja import Router, Schema, Form
 from datetime import datetime
 from .models import Question
@@ -80,14 +84,19 @@ def update_question(request, questions_id: int, payload: QuestionSchemaIn):
 
 @router.delete("/{questions_id}")
 def delete_question(request, questions_id: int):
+    question = get_object_or_404(Question, id=questions_id)
     if request.user.is_superuser:
-        question = Question.objects.get(id=questions_id)
-    elif request.user.is_authenticated and not request.user.is_superuser:
-        question = Question.objects.get(id=questions_id, created_by=request.user)
-    else:
-        question = None
-    if question:
         question.delete()
-        return {"success": True}
+        return JsonResponse({"success": True})
+    elif request.user.is_authenticated and not request.user.is_superuser:
+        if question.created_by == request.user:
+            try:
+                question.delete()
+                return JsonResponse({"success": True})
+            except ProtectedError:
+                return JsonResponse(
+                    {"error": "Cannot delete the question because it is referenced through protected foreign keys"})
+        else:
+            return JsonResponse({"error": "You are not authorized to delete this question"})
     else:
-        return {"error": "You are not authorized to delete this question"}
+        return JsonResponse({"error": "You are not authorized to delete this question"})

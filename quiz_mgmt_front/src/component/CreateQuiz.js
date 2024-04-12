@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {useNavigate} from "react-router-dom";
+import CreateNewQuestion from "./CreateQuestion";
 
 const CreateNewQuiz = () => {
   const navigate = useNavigate()
@@ -48,6 +49,7 @@ const CreateNewQuiz = () => {
           category_id: newQuiz.category_id,
           team_limit: newQuiz.team_limit,
           quiz_date: newQuiz.quiz_date,
+          is_completed: false,
         },
         { withCredentials: true }
       );
@@ -159,7 +161,6 @@ const CreateNewQuiz = () => {
             ))}
           </ul>
         </div>
-
         <button type="submit" className="btn btn-primary">Create Quiz</button>
       </form>
     </div>

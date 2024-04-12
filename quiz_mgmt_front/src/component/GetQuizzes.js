@@ -43,7 +43,7 @@ const Quizzes = () => {
       <div className="list-group">
         <h3>Upcoming Quizzes</h3>
         {nextFiveQuizzes.map((quiz) => (
-            <Link to={`/edit/${quiz.id}`} className="list-group-item list-group-item-action d-flex gap-3 py-3"
+            <Link to={`/edit-quiz/${quiz.id}`} className="list-group-item list-group-item-action d-flex gap-3 py-3"
                   key={quiz.id}>
               <img src="https://cdn-icons-png.freepik.com/512/5692/5692030.png" alt="twbs" width="32" height="32"
                    className="rounded-circle flex-shrink-0"/>
@@ -66,7 +66,7 @@ const Quizzes = () => {
         <button
             className="btn btn-primary d-inline-flex align-items-center"
             type="button"
-            onClick={() => window.location.href = "#"}
+            onClick={() => window.location.href = "/quizadmin"}
           >
           View All
         </button>

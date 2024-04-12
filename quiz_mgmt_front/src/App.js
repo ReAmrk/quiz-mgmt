@@ -5,7 +5,7 @@ import {Home} from "./component/Home";
 import {Navigation} from './component/Navigation';
 import {Logout} from './component/Logout';
 import {Register} from "./component/Register";
-import AddQuestion from "./component/AddQuestion";
+import AddQuestion from "./component/QuestionAdmin";
 import QuizAdmin from "./component/QuizAdmin";
 import PointsInQuizzesPage from './component/PointsAdmin';
 import EditQuiz from "./component/EditQuiz";
@@ -23,7 +23,7 @@ function App() {
           <Route path="/addquestion" element={<AddQuestion/>}/>
           <Route path="/quizadmin" element={<QuizAdmin/>}/>
           <Route path="/pointsadmin" element={<PointsInQuizzesPage/>}/>
-          <Route path="/edit/:quizId" element={<EditQuiz/>}/>
+          <Route path="/edit-quiz/:quizId" element={<EditQuiz/>}/>
           <Route path="/create-question" element={<CreateNewQuestion/>}/>
           <Route path="/create-quiz" element={<CreateNewQuiz/>}/>
         </Routes>

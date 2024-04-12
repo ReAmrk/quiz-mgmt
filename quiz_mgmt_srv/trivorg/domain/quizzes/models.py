@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 class Quiz(models.Model):
     quiz_name = models.CharField(max_length=100)
     description = models.TextField()
-    category = models.ForeignKey('categories.Category', on_delete=models.CASCADE)
+    category = models.ForeignKey('categories.Category', on_delete=models.PROTECT)
     team_limit = models.IntegerField()
     quiz_date = models.DateField()
     is_completed = models.BooleanField(default=False)

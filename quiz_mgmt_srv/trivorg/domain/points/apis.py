@@ -27,6 +27,10 @@ class PointSchemaOut(Schema):
 @router.post("/")
 def create_point(request, payload: PointSchemaIn):
     if request.user.is_authenticated:
+
+        existing_points_for_team = Point.objects.filter(team_id=payload.team_id, quiz_id=payload.quiz_id).first()
+        if existing_points_for_team:
+            return {"error": "Points already exist for this team in this quiz"}
         point = Point.objects.create(**payload.dict(), created_by=request.user)
         return {"id": point.id}
     else:

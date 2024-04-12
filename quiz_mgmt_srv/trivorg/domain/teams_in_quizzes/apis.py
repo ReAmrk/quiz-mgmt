@@ -26,6 +26,12 @@ class TeamInQuizSchemaOut(Schema):
 @router.post("/")
 def create_team_in_quiz(request, payload: TeamInQuizSchemaIn):
     if request.user.is_authenticated:
+        # Check if the team is already registered for the quiz
+        existing_team_in_quiz = TeamInQuiz.objects.filter(team_id=payload.team_id, quiz_id=payload.quiz_id).first()
+        if existing_team_in_quiz:
+            return {"error": "Team is already registered for this quiz"}
+
+        # If the team is not already registered, create a new entry
         team_in_quiz = TeamInQuiz.objects.create(**payload.dict(), created_by=request.user)
         return {"id": team_in_quiz.id}
     else:

@@ -15,6 +15,7 @@ class QuizSchemaIn(Schema):
     category_id: int
     team_limit: str
     quiz_date: str
+    is_completed: bool
 
 
 class QuizSchemaOut(Schema):
