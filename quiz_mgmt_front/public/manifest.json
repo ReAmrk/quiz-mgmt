@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "TrivOrg",
+  "name": "The Trivia Managment System",
   "icons": [
     {
       "src": "favicon.ico",

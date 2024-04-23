@@ -1,37 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
+import Container from 'react-bootstrap/Container';
 
 export function Navigation() {
   const [isAuth, setIsAuth] = useState(false);
 
-   useEffect(() => {
-     if (localStorage.getItem('access_token') !== null) {
-        setIsAuth(true);
-      }
-    }, [isAuth]);
+  useEffect(() => {
+    if (localStorage.getItem('access_token') !== null) {
+      setIsAuth(true);
+    }
+  }, []);
 
   return (
-    <div>
-      <Navbar bg="dark" variant="dark">
+    <Navbar bg="dark" variant="dark" expand="lg">
+      <Container>
         <Navbar.Brand href="/">TrivOrg</Navbar.Brand>
-        <Nav className="me-auto">
-          {/* Use conditional rendering for Home link */}
-          {isAuth && <Nav.Link href="/">Home</Nav.Link>}
-            <Nav.Link href="/register">Register</Nav.Link>
-            <Nav.Link href="/addquestion">Questions</Nav.Link>
-            <Nav.Link href="/quizadmin">Quiz</Nav.Link>
-            <Nav.Link href="/pointsadmin">Points</Nav.Link>
-        </Nav>
-        <Nav>
-          {/* Use conditional rendering for Logout/Login links */}
-          {isAuth ? (
-            <Nav.Link href="/logout">Logout</Nav.Link>
-          ) : (
-            <Nav.Link href="/login">Login</Nav.Link>
-          )}
-        </Nav>
-      </Navbar>
-    </div>
+        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+        <Navbar.Collapse id="basic-navbar-nav">
+          <Nav className="me-auto">
+            {isAuth && <Nav.Link href="/addquestion">Questions</Nav.Link>}
+            {isAuth && <Nav.Link href="/quizadmin">Quizzes</Nav.Link>}
+          </Nav>
+          <Nav>
+            {isAuth ? (
+              <Nav.Link href="/logout">Logout</Nav.Link>
+            ) : (
+              <Nav.Link href="/login">Login</Nav.Link>
+            )}
+            {!isAuth && <Nav.Link href="/register">Register</Nav.Link>}
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
   );
 }

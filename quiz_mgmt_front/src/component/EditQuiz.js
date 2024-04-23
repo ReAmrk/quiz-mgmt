@@ -16,6 +16,7 @@ const EditQuiz = () => {
     const [pointsToAdd, setPointsToAdd] = useState(0);
     const [teams, setTeams] = useState([]);
     const [teamPoints, setTeamPoints] = useState({});
+    const [points, setPoints] = useState([]);
 
     useEffect(() => {
         const fetchQuiz = async () => {
@@ -26,6 +27,7 @@ const EditQuiz = () => {
                 const questionsInQuizzesResponse = await axios.get(`http://localhost:8000/api/questions_in_quizzes/`);
                 const teamsInQuizzesResponse = await axios.get(`http://localhost:8000/api/teams_in_quizzes/`);
                 const teamsResponse = await axios.get(`http://localhost:8000/api/teams/`);
+                const pointsResponse = await axios.get(`http://localhost:8000/api/points/`);
 
                 setQuiz(quizResponse.data);
                 setCategories(categoriesResponse.data);
@@ -34,15 +36,7 @@ const EditQuiz = () => {
                 const teamsForCurrentQuiz = teamsInQuizzesResponse.data.filter(teamInQuiz => teamInQuiz.quiz.id == quizId);
                 setTeamsInQuizzes(teamsForCurrentQuiz);
                 setTeams(teamsResponse.data);
-
-                // Fetch points for each team in the selected quiz
-                const teamPointsData = {};
-                for (const teamInQuiz of teamsForCurrentQuiz) {
-                    const response = await axios.get(`http://localhost:8000/api/points/`);
-                    const points = response.data.length > 0 ? response.data[0].points : 0;
-                    teamPointsData[`${teamInQuiz.team.id}-${teamInQuiz.quiz.id}`] = points;
-                }
-                setTeamPoints(teamPointsData);
+                setPoints(pointsResponse.data);
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
@@ -50,6 +44,19 @@ const EditQuiz = () => {
 
         fetchQuiz();
     }, [quizId]);
+
+
+    useEffect(() => {
+        if (quizId && points.length > 0) {
+            const quizPoints = points.filter(point => point.quiz.id === parseInt(quizId));
+            const teamPointsData = {};
+            teams.forEach(team => {
+                const teamPoints = quizPoints.find(point => point.team.id === team.id);
+                teamPointsData[`${team.id}-${quizId}`] = teamPoints ? teamPoints.points : 0; // If no points found, default to 0
+            });
+            setTeamPoints(teamPointsData);
+        }
+    }, [quizId, points, teams]);
 
     const handleAddTeamToQuiz = async () => {
         try {
@@ -65,15 +72,6 @@ const EditQuiz = () => {
         }
     };
 
-    const handleQuestionSelection = (questionId) => {
-        // Toggle the selected question
-        setSelectedQuestions((prevSelected) =>
-            prevSelected.includes(questionId)
-                ? prevSelected.filter((id) => id !== questionId)
-                : [...prevSelected, questionId]
-        );
-    };
-
     const handleAddPoints = async () => {
         try {
             const response = await axios.post("http://localhost:8000/api/points/", {
@@ -86,6 +84,23 @@ const EditQuiz = () => {
             const newTeamPoints = { ...teamPoints };
             newTeamPoints[`${selectedTeamInQuiz.teamId}-${selectedTeamInQuiz.quizId}`] += parseInt(pointsToAdd);
             setTeamPoints(newTeamPoints);
+
+            const pointsResponse = await axios.get(`http://localhost:8000/api/points/`);
+            const teamPointsData = {};
+            // Iterate over each point in the data
+            pointsResponse.data.forEach(point => {
+                // Check if the point is for the correct quiz
+                if (point.quiz.id == quizId) {
+                    // Find the team corresponding to the point
+                    const team = teams.find(team => team.id == point.team.id);
+                    if (team) {
+                        // Set the points for the team
+                        teamPointsData[`${team.id}-${quizId}`] = point.points;
+                    }
+                }
+            });
+            // Update the state with the calculated team points
+            setTeamPoints(teamPointsData);
         } catch (error) {
             console.error("Error adding points:", error);
         }
@@ -119,15 +134,30 @@ const EditQuiz = () => {
         }
     }
 
-    const handleDeleteQuestion = async (questionInQuizId) => {
+    const handleDeleteQuestion = async (questionId) => {
         try {
+            // Filter the questionsInQuizzes array to find the specific question for the current quiz
+            console.log(questionsInQuizzes);
+            const questionInQuiz = questionsInQuizzes.find(qiq => qiq.question.id == questionId && qiq.quiz.id == quizId);
+            console.log(questionInQuiz);
+            if (!questionInQuiz) {
+                console.error("Question not found for the provided questionId and quizId:", questionId, quizId);
+                return;
+            }
+
+            const questionInQuizId = questionInQuiz.id;
+
+            console.log("Deleting question from quiz:", questionId, "QuestionInQuiz ID:", questionInQuizId);
             await axios.delete(`http://localhost:8000/api/questions_in_quizzes/${questionInQuizId}`);
-            const questionsInQuizzesResponse = await axios.get(`http://localhost:8000/api/questions_in_quizzes/`);
-            setQuestionsInQuizzes(questionsInQuizzesResponse.data);
+
+            // After deletion, update the questionsInQuizzes array by refetching the data
+            const updatedQuestionsInQuizzesResponse = await axios.get(`http://localhost:8000/api/questions_in_quizzes/`);
+            setQuestionsInQuizzes(updatedQuestionsInQuizzesResponse.data);
         } catch (error) {
             console.error("Error deleting question from quiz:", error);
         }
     };
+
 
     const getQuestionsForQuiz = (quizId) => {
         const filteredQuestionsInQuiz = questionsInQuizzes.filter((qiq) => qiq.quiz.id === quizId)
@@ -141,79 +171,122 @@ const EditQuiz = () => {
 
     return (
         <div className="container mt-5">
-            <h2>Edit Quiz</h2>
+            <h2 className="mb-4">Edit Quiz</h2>
             <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                     <label htmlFor="quizName" className="form-label">Quiz Name</label>
-                    <input type="text" className="form-control" id="quizName" value={quiz.quiz_name}/>
+                    <input
+                        type="text"
+                        className="form-control"
+                        id="quizName"
+                        value={quiz.quiz_name}
+                        onChange={(e) => setQuiz({...quiz, quiz_name: e.target.value})}
+                    />
                 </div>
                 <div className="mb-3">
                     <label htmlFor="description" className="form-label">Description</label>
-                    <textarea className="form-control" id="description" rows="3" value={quiz.description}></textarea>
+                    <textarea
+                        className="form-control"
+                        id="description"
+                        rows="3"
+                        value={quiz.description}
+                        onChange={(e) => setQuiz({...quiz, description: e.target.value})}
+                    ></textarea>
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="category" className="form-label">Category ID</label>
-                    <input type="text" className="form-control" id="category" value={quiz.category_id}/>
+                    <label htmlFor="category" className="form-label">Category</label>
+                    <select
+                        className="form-select"
+                        id="category"
+                        value={quiz.category_id}
+                        onChange={(e) => setQuiz({...quiz, category_id: e.target.value})}
+                    >
+                        <option value="">Select a category</option>
+                        {categories.map(category => (
+                            <option key={category.id} value={category.id}>{category.category_name}</option>
+                        ))}
+                    </select>
                 </div>
+
+
                 <div className="mb-3">
                     <label htmlFor="teamLimit" className="form-label">Team Limit</label>
-                    <input type="text" className="form-control" id="teamLimit" value={quiz.team_limit}/>
+                    <input
+                        type="text"
+                        className="form-control"
+                        id="teamLimit"
+                        value={quiz.team_limit}
+                        onChange={(e) => setQuiz({...quiz, team_limit: e.target.value})}
+                    />
                 </div>
+
                 <div className="mb-3">
                     <label htmlFor="quizDate" className="form-label">Quiz Date</label>
-                    <input type="date" className="form-control" id="quizDate" value={quiz.quiz_date}/>
+                    <input
+                        type="date"
+                        className="form-control"
+                        id="quizDate"
+                        value={quiz.quiz_date}
+                        onChange={(e) => setQuiz({...quiz, quiz_date: e.target.value})}
+                    />
                 </div>
+
                 <button type="submit" className="btn btn-primary">Submit</button>
             </form>
-            <div>
-                <h3>Existing Questions</h3>
-                <h3>Existing Questions</h3>
-                <ul>
+            <div className="mt-4">
+                <h3 className="mb-3">Existing Questions</h3>
+                <ul className="list-group">
                     {getQuestionsForQuiz(quiz.id).map((question) => (
-                        <li key={question.id}>
+                        <li key={question.id}
+                            className="list-group-item d-flex justify-content-between align-items-center">
                             {question.question}
-                            <button onClick={() => handleDeleteQuestion(question.questionInQuizId)}>Delete</button>
+                            <button className="btn btn-danger"
+                                    onClick={() => handleDeleteQuestion(question.id)}>Delete
+                            </button>
                         </li>
                     ))}
                 </ul>
             </div>
 
-            <div>
-                <h3>Add New Question</h3>
-                <select value={newQuestion} onChange={(e) => setNewQuestion(e.target.value)}>
+            <div className="mt-4">
+                <h3 className="mb-3">Add New Question</h3>
+                <select className="form-select mb-3" value={newQuestion} onChange={(e) => setNewQuestion(e.target.value)}>
                     <option value="">Select a question</option>
                     {questions.map((question) => (
                         <option key={question.id} value={question.id}>{question.question}</option>
                     ))}
                 </select>
-                <button onClick={() => setNewQuestion("")}>Clear Selection</button>
-                <button onClick={handleAddQuestion}>Add Question</button>
+                <div>
+                    <button className="btn btn-primary" onClick={handleAddQuestion}>Add Question</button>
+                </div>
             </div>
-            <div>
-                <h3>Registered Teams</h3>
-                <ul>
+            <div className="mt-4">
+                <h3 className="mb-3">Registered Teams</h3>
+                <ul className="list-group">
                     {teamsInQuizzes.map((teamInQuiz) => (
-                        <li key={teamInQuiz.id}>{teamInQuiz.team.team_name} - Points: {teamPoints[`${teamInQuiz.team.id}-${teamInQuiz.quiz.id}`]}</li>
+                        <li key={teamInQuiz.id} className="list-group-item d-flex justify-content-between align-items-center">
+                            {teamInQuiz.team.team_name} - Points: {teamPoints[`${teamInQuiz.team.id}-${quizId}`]}
+                        </li>
                     ))}
                 </ul>
             </div>
 
             {/* Add team to quiz section */}
-            <div>
-                <h3>Add Team to Quiz</h3>
-                <select value={selectedTeam} onChange={(e) => setSelectedTeam(e.target.value)}>
+            <div className="mt-4">
+                <h3 className="mb-3">Add Team to Quiz</h3>
+                <select className="form-select mb-3" value={selectedTeam} onChange={(e) => setSelectedTeam(e.target.value)}>
                     <option value="">Select Team</option>
                     {teams.map((team) => (
                         <option key={team.id} value={team.id}>{team.team_name}</option>
                     ))}
                 </select>
-                <button onClick={handleAddTeamToQuiz}>Add Team to Quiz</button>
+                <button className="btn btn-primary" onClick={handleAddTeamToQuiz}>Add Team to Quiz</button>
             </div>
 
             {/* Add points to team in quiz section */}
-            <div>
-                <h3>Add Points to Team in Quiz</h3>
-                <select value={`${selectedTeamInQuiz.teamId}-${selectedTeamInQuiz.quizId}`} onChange={(e) => {
+            <div className="mt-4">
+                <h3 className="mb-3">Add Points to Team in Quiz</h3>
+                <select className="form-select mb-3" value={`${selectedTeamInQuiz.teamId}-${selectedTeamInQuiz.quizId}`} onChange={(e) => {
                     const [teamId, quizId] = e.target.value.split("-");
                     setSelectedTeamInQuiz({ teamId, quizId });
                 }}>
@@ -222,9 +295,11 @@ const EditQuiz = () => {
                         <option key={teamInQuiz.id} value={`${teamInQuiz.team.id}-${teamInQuiz.quiz.id}`}>{teamInQuiz.team.team_name} - {teamInQuiz.quiz.quiz_name}</option>
                     ))}
                 </select>
-                <label>Points to Add:</label>
-                <input type="number" value={pointsToAdd} onChange={(e) => setPointsToAdd(e.target.value)} />
-                <button onClick={handleAddPoints}>Add Points</button>
+                <div>
+                    <label htmlFor="pointsToAdd" className="form-label me-2">Points to Add:</label>
+                    <input type="number" id="pointsToAdd" className="form-control mb-3" value={pointsToAdd} onChange={(e) => setPointsToAdd(e.target.value)} />
+                    <button className="btn btn-primary" onClick={handleAddPoints}>Add Points</button>
+                </div>
             </div>
         </div>
     );

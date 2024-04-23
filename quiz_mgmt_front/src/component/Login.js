@@ -45,49 +45,51 @@ export const Login = () => {
     }
   };
 
-    return (
-    <div className="Auth-form-container">
-      <form className="Auth-form" onSubmit={submit}>
-        <div className="Auth-form-content">
-          <h3 className="Auth-form-title">Sign In</h3>
+  return (
+    <div className="container">
+      <div className="row justify-content-center">
+        <div className="col-md-6">
+          <form className="mt-5" onSubmit={submit}>
+            <h3 className="mb-4 text-center">Sign In</h3>
 
-          {errorMsg && (
-            <div className="alert alert-danger" role="alert">
-              {errorMsg}
+            {errorMsg && (
+              <div className="alert alert-danger" role="alert">
+                {errorMsg}
+              </div>
+            )}
+
+            <div className="mb-3">
+              <label htmlFor="username" className="form-label">Username</label>
+              <input
+                id="username"
+                className="form-control"
+                placeholder="Enter Username"
+                name="username"
+                type="text"
+                value={username}
+                required
+                onChange={(e) => setUsername(e.target.value)}
+              />
             </div>
-          )}
-
-          <div className="form-group mt-3">
-            <label>Username</label>
-            <input
-              className="form-control mt-1"
-              placeholder="Enter Username"
-              name="username"
-              type="text"
-              value={username}
-              required
-              onChange={(e) => setUsername(e.target.value)}
-            />
-          </div>
-          <div className="form-group mt-3">
-            <label>Password</label>
-            <input
-              name="password"
-              type="password"
-              className="form-control mt-1"
-              placeholder="Enter password"
-              value={password}
-              required
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-          <div className="d-grid gap-2 mt-3">
-            <button type="submit" className="btn btn-primary">
-              Submit
-            </button>
-          </div>
+            <div className="mb-3">
+              <label htmlFor="password" className="form-label">Password</label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                className="form-control"
+                placeholder="Enter password"
+                value={password}
+                required
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+            <div className="d-grid gap-2">
+              <button type="submit" className="btn btn-primary">Submit</button>
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
     </div>
   );
 };
