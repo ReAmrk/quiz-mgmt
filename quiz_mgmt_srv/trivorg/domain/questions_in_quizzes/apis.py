@@ -26,6 +26,10 @@ class QuestionInQuizSchemaOut(Schema):
 @router.post("/")
 def create_question_in_quiz(request, payload: QuestionInQuizSchemaIn):
     if request.user.is_authenticated:
+
+        existing_question_in_quiz = QuestionInQuiz.objects.filter(question_id=payload.question_id, quiz_id=payload.quiz_id).first()
+        if existing_question_in_quiz:
+            return {"error": "Question already exists in this quiz"}
         question_in_quiz = QuestionInQuiz.objects.create(**payload.dict())
         return {"id": question_in_quiz.id}
     else:

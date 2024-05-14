@@ -134,6 +134,38 @@ const EditQuiz = () => {
         }
     }
 
+    const findPointsIdsToDelete = (teamPointsData, teams, quizId, points) => {
+        const pointsIdsToDelete = [];
+
+        Object.entries(teamPointsData).forEach(([teamQuizKey, points]) => {
+            const [teamId, qId] = teamQuizKey.split('-');
+            if (parseInt(qId) === quizId) {
+                const team = teams.find(team => team.id === parseInt(teamId));
+                if (team) {
+                    const point = points.find(point => point.quiz.id === quizId && point.team.id === parseInt(teamId));
+                    if (point) {
+                        pointsIdsToDelete.push(point.id);
+                    }
+                }
+            }
+        });
+
+        return pointsIdsToDelete;
+    };
+
+    const handleDeletePoints = async (teamPoints) => {
+        const pointsId = findPointsIdsToDelete(teamPoints, teams, quizId, points);
+        console.log("Deleting points:", pointsId);
+/*        try {
+            console.log("Deleting points:", pointsId);
+            await axios.delete(`http://localhost:8000/api/points/${pointsId}`);
+            const pointsResponse = await axios.get(`http://localhost:8000/api/points/`);
+            setPoints(pointsResponse.data);
+        } catch (error) {
+            console.error("Error deleting points:", error);
+        }*/
+    }
+
     const handleDeleteQuestion = async (questionId) => {
         try {
             // Filter the questionsInQuizzes array to find the specific question for the current quiz
@@ -264,8 +296,12 @@ const EditQuiz = () => {
                 <h3 className="mb-3">Registered Teams</h3>
                 <ul className="list-group">
                     {teamsInQuizzes.map((teamInQuiz) => (
-                        <li key={teamInQuiz.id} className="list-group-item d-flex justify-content-between align-items-center">
+                        <li key={teamInQuiz.id}
+                            className="list-group-item d-flex justify-content-between align-items-center">
                             {teamInQuiz.team.team_name} - Points: {teamPoints[`${teamInQuiz.team.id}-${quizId}`]}
+                            <button className="btn btn-danger"
+                                    onClick={() => handleDeletePoints(teamPoints)}>Delete
+                            </button>
                         </li>
                     ))}
                 </ul>
